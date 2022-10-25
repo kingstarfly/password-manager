@@ -5,18 +5,15 @@ import {
   Group,
   Burger,
   TextInput,
+  Menu,
+  ActionIcon,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { TbSearch } from "react-icons/tb";
+import { TbChevronDown, TbSearch } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/auth";
 
 const useStyles = createStyles((theme) => ({
-  header: {
-    paddingLeft: theme.spacing.md,
-    paddingRight: theme.spacing.md,
-  },
-
   inner: {
     height: 56,
     display: "flex",
@@ -26,12 +23,6 @@ const useStyles = createStyles((theme) => ({
 
   links: {
     [theme.fn.smallerThan("md")]: {
-      display: "none",
-    },
-  },
-
-  search: {
-    [theme.fn.smallerThan("xs")]: {
       display: "none",
     },
   },
@@ -64,25 +55,40 @@ function MyHeader() {
   let navigate = useNavigate();
 
   return (
-    <Header height={56} className={classes.header} mb={120}>
-      <div className={classes.inner}>
+    <Header
+      height={56}
+      className="px-4 bg-slate-700 text-inherit border-b-slate-900 border-b-2"
+    >
+      <div className="h-14 flex justify-between items-center">
         <TextInput
-          className={classes.search}
+          classNames={{
+            input: "bg-slate-800 border-none text-slate-100",
+            root: "flex-1",
+          }}
           icon={<TbSearch size={16} />}
           placeholder="Search Vault"
         />
 
-        <Group>
-          <p>
-            {auth.user}{" "}
-            <button
-              onClick={() => {
-                auth.signout(() => navigate("/"));
-              }}
-            >
-              Sign out
-            </button>
-          </p>
+        <Group className="w-64 justify-end">
+          <p className="align-middle">{auth.user} </p>
+          <Menu>
+            <Menu.Target>
+              <ActionIcon className="text-slate-100">
+                <TbChevronDown size={16} />
+              </ActionIcon>
+            </Menu.Target>
+
+            <Menu.Dropdown>
+              <Menu.Item
+                component="button"
+                onClick={() => {
+                  auth.signout(() => navigate("/"));
+                }}
+              >
+                Sign out
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
         </Group>
       </div>
     </Header>
