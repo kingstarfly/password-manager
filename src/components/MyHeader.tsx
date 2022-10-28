@@ -1,56 +1,25 @@
-import {
-  createStyles,
-  Header,
-  Autocomplete,
-  Group,
-  Burger,
-  TextInput,
-  Menu,
-  ActionIcon,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import React from "react";
 import { TbChevronDown, TbSearch } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+
+import {
+  ActionIcon,
+  Group,
+  Header,
+  Menu,
+  TextInput,
+  TextInputProps,
+} from "@mantine/core";
+
 import { useAuth } from "../auth/auth";
 
-const useStyles = createStyles((theme) => ({
-  inner: {
-    height: 56,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  links: {
-    [theme.fn.smallerThan("md")]: {
-      display: "none",
-    },
-  },
-
-  link: {
-    display: "block",
-    lineHeight: 1,
-    padding: "8px 12px",
-    borderRadius: theme.radius.sm,
-    textDecoration: "none",
-    color:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[0]
-        : theme.colors.gray[7],
-    fontSize: theme.fontSizes.sm,
-    fontWeight: 500,
-
-    "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[6]
-          : theme.colors.gray[0],
-    },
-  },
-}));
-
-function MyHeader() {
-  const { classes } = useStyles();
+function MyHeader({
+  searchValue,
+  setSearchValue,
+}: {
+  searchValue: string;
+  setSearchValue: (search: string) => void;
+}) {
   let auth = useAuth();
   let navigate = useNavigate();
 
@@ -60,7 +29,9 @@ function MyHeader() {
       className="px-4 bg-slate-700 text-inherit border-b-slate-900 border-b-2"
     >
       <div className="h-14 flex justify-between items-center">
-        <TextInput
+        <DebouncedInput
+          value={searchValue}
+          onChange={(_searchValue) => setSearchValue(_searchValue.toString())}
           classNames={{
             input: "bg-slate-800 border-none text-slate-100",
             root: "flex-1",
@@ -96,3 +67,40 @@ function MyHeader() {
 }
 
 export default MyHeader;
+
+function DebouncedInput({
+  value: initialValue,
+  onChange,
+  debounce = 500,
+  ...props
+}: {
+  value: string | number;
+  onChange: (value: string | number) => void;
+  debounce?: number;
+} & Omit<TextInputProps, "onChange">) {
+  const [value, setValue] = React.useState(initialValue);
+
+  React.useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value);
+    }, debounce);
+
+    return () => clearTimeout(timeout);
+  }, [value]);
+
+  return (
+    <TextInput
+      className="flex-1"
+      {...props}
+      size="xs"
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+      aria-label="search"
+      variant="unstyled"
+    />
+  );
+}
