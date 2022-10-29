@@ -1,11 +1,19 @@
 import * as React from "react";
-import { AppShell, Navbar, ScrollArea } from "@mantine/core";
+import {
+  ActionIcon,
+  AppShell,
+  Button,
+  Footer,
+  Navbar,
+  ScrollArea,
+} from "@mantine/core";
 import MyHeader from "../components/MyHeader";
 import SubaccountPreviewButton, {
   SubaccountPreview,
 } from "../components/SubaccountPreviewButton";
 import { useQuery } from "@tanstack/react-query";
 import SubaccountView from "../components/SubaccountView";
+import { TbPlus } from "react-icons/tb";
 
 // Create 10 fake accounts with email "user@example.com"
 const fakeSubaccounts: SubaccountPreview[] = Array.from(
@@ -18,6 +26,7 @@ const fakeSubaccounts: SubaccountPreview[] = Array.from(
 );
 
 function HomePage() {
+  const [mode, setMode] = React.useState<"view" | "add">("view");
   const [selectedSubaccountId, setSelectedSubaccountId] =
     React.useState<number>();
 
@@ -35,8 +44,14 @@ function HomePage() {
   );
 
   const handleSelect = (id: number) => {
+    setMode("view");
     setSelectedSubaccountId(id);
   };
+
+  function showAddSubaccount() {
+    setSelectedSubaccountId(-1);
+    setMode("add");
+  }
 
   const filteredSubaccounts = React.useMemo(() => {
     if (!subaccounts) {
@@ -90,8 +105,21 @@ function HomePage() {
           </Navbar.Section>
         </Navbar>
       }
+      footer={
+        <Footer
+          height={48}
+          className="px-8 h-full bg-slate-700 text-inherit border-t-slate-900 border-t-2 flex flex-row items-center"
+        >
+          <button
+            onClick={() => showAddSubaccount()}
+            className="bg-slate-800 w-64 py-2 rounded-sm flex flex-row justify-center items-center hover:bg-slate-900 text-blue-300 "
+          >
+            <TbPlus size={24} />
+          </button>
+        </Footer>
+      }
     >
-      <SubaccountView subaccountId={selectedSubaccountId} />
+      <SubaccountView mode={mode} subaccountId={selectedSubaccountId} />
     </AppShell>
   );
 }
