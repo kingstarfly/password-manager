@@ -1,12 +1,5 @@
 import * as React from "react";
-import {
-  ActionIcon,
-  AppShell,
-  Button,
-  Footer,
-  Navbar,
-  ScrollArea,
-} from "@mantine/core";
+import { AppShell, Footer, Navbar, ScrollArea } from "@mantine/core";
 import MyHeader from "../components/MyHeader";
 import SubaccountPreviewButton, {
   SubaccountPreview,
@@ -25,6 +18,8 @@ const fakeSubaccounts: SubaccountPreview[] = Array.from(
   })
 );
 
+const BASE_URL = "https://pwm4010.herokuapp.com";
+
 function HomePage() {
   const [mode, setMode] = React.useState<"view" | "add">("view");
   const [selectedSubaccountId, setSelectedSubaccountId] =
@@ -37,10 +32,18 @@ function HomePage() {
     isLoading,
     isFetching,
     error,
-  } = useQuery(["subaccounts"], () =>
-    fetch("https://jsonplaceholder.typicode.com/todos/1").then(
-      (res) => fakeSubaccounts
-    )
+  } = useQuery<SubaccountPreview[]>(["subaccounts"], () =>
+    fetch(`${BASE_URL}/accounts/subaccounts`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => {
+        console.log(response);
+        return response.json() || fakeSubaccounts;
+      })
+      .catch((error) => {
+        console.error(error);
+      })
   );
 
   const handleSelect = (id: number) => {
@@ -94,7 +97,7 @@ function HomePage() {
             }}
           >
             <div className="flex flex-col pt-4">
-              {filteredSubaccounts.map((subaccount) => (
+              {filteredSubaccounts?.map((subaccount) => (
                 <SubaccountPreviewButton
                   selected={selectedSubaccountId === subaccount.id}
                   onSelect={() => handleSelect(subaccount.id)}

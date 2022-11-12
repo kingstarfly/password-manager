@@ -1,7 +1,7 @@
 import React from "react";
 import { ActionIcon, Button, PasswordInput, TextInput } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TbCheck, TbCopy, TbTrash } from "react-icons/tb";
 
 export interface SubaccountProps {
@@ -11,6 +11,7 @@ export interface SubaccountProps {
   password: string;
 }
 
+const BASE_URL = "https://pwm4010.herokuapp.com";
 const SubaccountView = ({
   mode,
   subaccountId,
@@ -25,22 +26,50 @@ const SubaccountView = ({
   } = useQuery(
     ["subaccount", subaccountId],
     () =>
-      fetch(`https://jsonplaceholder.typicode.com/todos/${subaccountId}`).then(
-        (res) => ({
+      fetch(`${BASE_URL}/acccounts/subaccount/${subaccountId}`, {
+        method: "GET",
+        credentials: "include",
+      }).then((res) => {
+        console.log(res);
+        return {
           id: subaccountId,
           name: "Subaccount " + subaccountId,
           username: "user@example.com",
           password: "thePassword",
-        })
-      ),
+        };
+      }),
     {
-      enabled: mode === "view",
+      enabled: mode === "view" && subaccountId !== undefined,
     }
   );
 
   const [name, setName] = React.useState("");
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+
+  const queryClient = useQueryClient();
+
+  const createSubaccountMutation = useMutation({
+    mutationFn: () => {
+      return fetch(`${BASE_URL}/accounts/create`, {
+        method: "POST",
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          showNotification({
+            title: "Account created",
+            message: `Account created with ID ${data.id}`,
+          });
+        });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subaccounts"], exact: true });
+    },
+  });
 
   if (subaccountId === undefined) {
     return null;
@@ -140,8 +169,9 @@ const SubaccountView = ({
           </Button>
         ) : (
           <Button
-            // TODO: Confirm new subaccount
-            onClick={() => {}}
+            onClick={() => {
+              createSubaccountMutation.mutate();
+            }}
             leftIcon={<TbCheck size={16} />}
             className="self-center mt-4 px-6 py-3 text-blue-400 bg-slate-700 hover:bg-slate-600"
           >

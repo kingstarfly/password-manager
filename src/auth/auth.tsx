@@ -1,10 +1,11 @@
 import * as React from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { fakeAuthProvider } from "./fakeAuthPovider";
+import { authProvider } from "./authProvider";
 
 interface AuthContextType {
   user: any;
-  signin: (user: string, callback: VoidFunction) => void;
+  signin: (email: string, password: string, callback: VoidFunction) => void;
+  register: (email: string, password: string, callback: VoidFunction) => void;
   signout: (callback: VoidFunction) => void;
 }
 
@@ -13,21 +14,28 @@ let AuthContext = React.createContext<AuthContextType>(null!);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   let [user, setUser] = React.useState<any>(null);
 
-  let signin = (newUser: string, callback: VoidFunction) => {
-    return fakeAuthProvider.signin(() => {
-      setUser(newUser);
+  let signin = (email: string, password: string, callback: VoidFunction) => {
+    return authProvider.signin(email, password, () => {
+      setUser(email);
+      callback();
+    });
+  };
+
+  let register = (email: string, password: string, callback: VoidFunction) => {
+    return authProvider.register(email, password, () => {
+      setUser(email);
       callback();
     });
   };
 
   let signout = (callback: VoidFunction) => {
-    return fakeAuthProvider.signout(() => {
+    return authProvider.signout(() => {
       setUser(null);
       callback();
     });
   };
 
-  let value = { user, signin, signout };
+  let value = { user, signin, register, signout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
