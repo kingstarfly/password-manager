@@ -7,6 +7,7 @@ import SubaccountPreviewButton, {
 import { useQuery } from "@tanstack/react-query";
 import SubaccountView from "../components/SubaccountView";
 import { TbPlus } from "react-icons/tb";
+import { BASE_URL } from "../api/constants";
 
 // Create 10 fake accounts with email "user@example.com"
 const fakeSubaccounts: SubaccountPreview[] = Array.from(
@@ -17,8 +18,6 @@ const fakeSubaccounts: SubaccountPreview[] = Array.from(
     username: "user@example.com",
   })
 );
-
-const BASE_URL = "https://pwm4010.herokuapp.com";
 
 function HomePage() {
   const [mode, setMode] = React.useState<"view" | "add">("view");
@@ -39,10 +38,14 @@ function HomePage() {
     })
       .then((response) => {
         console.log(response);
-        return response.json() || fakeSubaccounts;
+        if (response.status === 200) {
+          return response.json() || fakeSubaccounts;
+        } else {
+          return [];
+        }
       })
       .catch((error) => {
-        console.error(error);
+        console.error("error when fetching subaccounts", error);
       })
   );
 
@@ -52,8 +55,13 @@ function HomePage() {
   };
 
   function showAddSubaccount() {
-    setSelectedSubaccountId(-1);
+    setSelectedSubaccountId(undefined);
     setMode("add");
+  }
+
+  function createdSubaccountCallback() {
+    setSelectedSubaccountId(undefined);
+    setMode("view");
   }
 
   const filteredSubaccounts = React.useMemo(() => {
@@ -97,13 +105,17 @@ function HomePage() {
             }}
           >
             <div className="flex flex-col pt-4">
-              {filteredSubaccounts?.map((subaccount) => (
-                <SubaccountPreviewButton
-                  selected={selectedSubaccountId === subaccount.id}
-                  onSelect={() => handleSelect(subaccount.id)}
-                  subaccountPreview={subaccount}
-                />
-              ))}
+              {(isFetching || isLoading) && !subaccounts ? (
+                <div>Loading...</div>
+              ) : (
+                filteredSubaccounts.map((subaccount) => (
+                  <SubaccountPreviewButton
+                    selected={selectedSubaccountId === subaccount.id}
+                    onSelect={() => handleSelect(subaccount.id)}
+                    subaccountPreview={subaccount}
+                  />
+                ))
+              )}
             </div>
           </Navbar.Section>
         </Navbar>
@@ -122,7 +134,11 @@ function HomePage() {
         </Footer>
       }
     >
-      <SubaccountView mode={mode} subaccountId={selectedSubaccountId} />
+      <SubaccountView
+        mode={mode}
+        subaccountId={selectedSubaccountId}
+        onCreateCallback={createdSubaccountCallback}
+      />
     </AppShell>
   );
 }

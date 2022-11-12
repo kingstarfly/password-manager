@@ -1,7 +1,8 @@
 /**
  * This represents some generic auth provider API, like Firebase.
  */
-const BASE_URL = "https://pwm4010.herokuapp.com";
+
+import { BASE_URL } from "../api/constants";
 
 const authProvider = {
   isAuthenticated: false,
@@ -17,6 +18,8 @@ const authProvider = {
         password: password,
       }),
     }).then((response) => {
+      console.log("login response");
+      console.log(response);
       if (response.status === 200) {
         callback();
       } else {

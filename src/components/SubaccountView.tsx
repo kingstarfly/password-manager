@@ -3,7 +3,8 @@ import { ActionIcon, Button, PasswordInput, TextInput } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TbCheck, TbCopy, TbTrash } from "react-icons/tb";
-
+import { BASE_URL } from "../api/constants";
+import Cookies from "js-cookie";
 export interface SubaccountProps {
   id: number;
   name: string;
@@ -11,32 +12,43 @@ export interface SubaccountProps {
   password: string;
 }
 
-const BASE_URL = "https://pwm4010.herokuapp.com";
+interface DecryptedData {
+  id: string;
+  name: string;
+  plainUsername: string;
+  plainPassword: string;
+}
+
 const SubaccountView = ({
   mode,
   subaccountId,
+  onCreateCallback,
 }: {
   mode: "view" | "add";
   subaccountId: number | undefined;
+  onCreateCallback: () => void;
 }) => {
   const {
     data: subaccount,
-    isLoading,
+    isInitialLoading,
     error,
-  } = useQuery(
+  } = useQuery<DecryptedData>(
     ["subaccount", subaccountId],
     () =>
-      fetch(`${BASE_URL}/acccounts/subaccount/${subaccountId}`, {
+      fetch(`${BASE_URL}/accounts/subaccount?id=${subaccountId}`, {
         method: "GET",
         credentials: "include",
-      }).then((res) => {
-        console.log(res);
-        return {
-          id: subaccountId,
-          name: "Subaccount " + subaccountId,
-          username: "user@example.com",
-          password: "thePassword",
-        };
+        headers: new Headers({
+          "X-CSRF-TOKEN": Cookies.get("csrf_access_token") || "",
+        }),
+      }).then((response) => {
+        if (response.status === 200) {
+          return response.json().then((data) => {
+            return data;
+          });
+        } else {
+          return null;
+        }
       }),
     {
       enabled: mode === "view" && subaccountId !== undefined,
@@ -51,19 +63,27 @@ const SubaccountView = ({
 
   const createSubaccountMutation = useMutation({
     mutationFn: () => {
-      return fetch(`${BASE_URL}/accounts/create`, {
+      return fetch(`${BASE_URL}/accounts/subaccount`, {
         method: "POST",
-        body: JSON.stringify({
-          username,
-          password,
+        body: new URLSearchParams({
+          name: name,
+          username: username,
+          password: password,
+        }),
+        credentials: "include",
+        headers: new Headers({
+          "X-CSRF-TOKEN": Cookies.get("csrf_access_token") || "",
         }),
       })
         .then((res) => res.json())
         .then((data) => {
           showNotification({
-            title: "Account created",
-            message: `Account created with ID ${data.id}`,
+            message: `Subaccount of name ${data.name} created!`,
           });
+          setName("");
+          setUsername("");
+          setPassword("");
+          onCreateCallback();
         });
     },
     onSuccess: () => {
@@ -71,11 +91,11 @@ const SubaccountView = ({
     },
   });
 
-  if (subaccountId === undefined) {
+  if (mode === "view" && subaccountId === undefined) {
     return null;
   }
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <div>Loading...</div>;
   }
 
@@ -114,7 +134,7 @@ const SubaccountView = ({
             <p className="text-slate-400 text-base">Username</p>
             {mode === "view" ? (
               <p className="text-slate-100 text-lg font-medium">
-                {subaccount?.username}
+                {subaccount?.plainUsername}
               </p>
             ) : (
               <TextInput
@@ -133,7 +153,7 @@ const SubaccountView = ({
             <div className="flex flex-row items-center">
               <PasswordInput
                 variant="unstyled"
-                value={mode === "view" ? subaccount?.password : password}
+                value={mode === "view" ? subaccount?.plainPassword : password}
                 onChange={(event) => setPassword(event.currentTarget.value)}
                 contentEditable={mode === "add"}
                 classNames={{
@@ -172,6 +192,7 @@ const SubaccountView = ({
             onClick={() => {
               createSubaccountMutation.mutate();
             }}
+            loading={createSubaccountMutation.isLoading}
             leftIcon={<TbCheck size={16} />}
             className="self-center mt-4 px-6 py-3 text-blue-400 bg-slate-700 hover:bg-slate-600"
           >
