@@ -6,7 +6,11 @@ import { BASE_URL } from "../api/constants";
 
 const authProvider = {
   isAuthenticated: false,
-  signin(email: string, password: string, callback: VoidFunction) {
+  signin(
+    email: string,
+    password: string,
+    callback: (isSuccessful: boolean) => void
+  ) {
     fetch(BASE_URL + "/auth/login", {
       method: "POST",
       headers: {
@@ -21,13 +25,18 @@ const authProvider = {
       console.log("login response");
       console.log(response);
       if (response.status === 200) {
-        callback();
+        callback(true);
       } else {
         console.error("Login failed", response.status);
+        callback(false);
       }
     });
   },
-  register(email: string, password: string, callback: VoidFunction) {
+  register(
+    email: string,
+    password: string,
+    callback: (isSuccessful: boolean) => void
+  ) {
     fetch(BASE_URL + "/auth/register", {
       method: "POST",
       headers: {
@@ -39,15 +48,25 @@ const authProvider = {
       }),
     }).then((response) => {
       if (response.status === 200) {
-        callback();
+        callback(true);
       } else {
         console.error("Register failed", response.status);
+        callback(false);
       }
     });
   },
   signout(callback: VoidFunction) {
-    authProvider.isAuthenticated = false;
-    setTimeout(callback, 100);
+    fetch(BASE_URL + "/auth/logout", {
+      method: "DELETE",
+      credentials: "include",
+    }).then((response) => {
+      if (response.status === 200) {
+        callback();
+      } else {
+        console.error("Logout failed");
+        console.error(response);
+      }
+    });
   },
 };
 

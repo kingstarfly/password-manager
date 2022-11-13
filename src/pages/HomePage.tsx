@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AppShell, Footer, Navbar, ScrollArea } from "@mantine/core";
+import { AppShell, Footer, Loader, Navbar, ScrollArea } from "@mantine/core";
 import MyHeader from "../components/MyHeader";
 import SubaccountPreviewButton, {
   SubaccountPreview,
@@ -106,7 +106,9 @@ function HomePage() {
           >
             <div className="flex flex-col pt-4">
               {(isFetching || isLoading) && !subaccounts ? (
-                <div>Loading...</div>
+                <div className="self-center">
+                  <Loader />
+                </div>
               ) : (
                 filteredSubaccounts.map((subaccount) => (
                   <SubaccountPreviewButton

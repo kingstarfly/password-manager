@@ -6,7 +6,7 @@ import { NotificationsProvider } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { AuthProvider, RequireAuth } from "./auth/auth";
-import MyHeader from "./pages/HomePage";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 
 const queryClient = new QueryClient();
@@ -23,7 +23,7 @@ export default function App() {
                 path="/"
                 element={
                   <RequireAuth>
-                    <MyHeader />
+                    <HomePage />
                   </RequireAuth>
                 }
               />
@@ -33,6 +33,5 @@ export default function App() {
       </NotificationsProvider>
     </MantineProvider>
   );
-  
 }
   

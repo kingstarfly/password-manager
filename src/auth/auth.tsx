@@ -1,30 +1,44 @@
 import * as React from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { authProvider } from "./authProvider";
 
 interface AuthContextType {
   user: any;
-  signin: (email: string, password: string, callback: VoidFunction) => void;
-  register: (email: string, password: string, callback: VoidFunction) => void;
+  isLoading: boolean;
+  signin: (
+    email: string,
+    password: string,
+    callback: (isSuccessful: boolean) => void
+  ) => void;
+  register: (
+    email: string,
+    password: string,
+    callback: (isSuccessful: boolean) => void
+  ) => void;
   signout: (callback: VoidFunction) => void;
 }
 
 let AuthContext = React.createContext<AuthContextType>(null!);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  let [user, setUser] = React.useState<any>(null);
+  const [user, setUser] = React.useState<any>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  let signin = (email: string, password: string, callback: VoidFunction) => {
-    return authProvider.signin(email, password, () => {
+  let signin: AuthContextType["signin"] = (email, password, callback) => {
+    setIsLoading(true);
+    return authProvider.signin(email, password, (isSuccessful) => {
       setUser(email);
-      callback();
+      setIsLoading(false);
+      callback(isSuccessful);
     });
   };
 
-  let register = (email: string, password: string, callback: VoidFunction) => {
-    return authProvider.register(email, password, () => {
+  let register: AuthContextType["register"] = (email, password, callback) => {
+    setIsLoading(true);
+    return authProvider.register(email, password, (isSuccessful) => {
       setUser(email);
-      callback();
+      setIsLoading(false);
+      callback(isSuccessful);
     });
   };
 
@@ -35,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  let value = { user, signin, register, signout };
+  let value = { user, signin, register, signout, isLoading };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -47,6 +61,10 @@ export function useAuth() {
 export function RequireAuth({ children }: { children: JSX.Element }) {
   let auth = useAuth();
   let location = useLocation();
+
+  // get cookie
+  // if cookie is not set, redirect to login page
+  // if cookie is set, check if it's valid
 
   if (!auth.user) {
     // Redirect them to the /login page, but save the current location they were

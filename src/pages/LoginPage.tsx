@@ -14,6 +14,7 @@ import {
   TextInput,
   TextInputProps,
 } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 
 function LoginPage() {
   let navigate = useNavigate();
@@ -46,21 +47,34 @@ function LoginPage() {
         <form
           onSubmit={form.onSubmit(({ email, password }) => {
             if (type === "login") {
-              auth.signin(email, password, () => {
-                // Send them back to the page they tried to visit when they were
-                // redirected to the login page. Use { replace: true } so we don't create
-                // another entry in the history stack for the login page.  This means that
-                // when they get to the protected page and click the back button, they
-                // won't end up back on the login page, which is also really nice for the
-                // user experience.
-                navigate(from, { replace: true });
+              auth.signin(email, password, (isSuccessful) => {
+                if (!isSuccessful) {
+                  showNotification({
+                    message: `Incorrect username or password provided`,
+                    color: "red",
+                  });
+                } else {
+                  // Send them back to the page they tried to visit when they were
+                  // redirected to the login page. Use { replace: true } so we don't create
+                  // another entry in the history stack for the login page.  This means that
+                  // when they get to the protected page and click the back button, they
+                  // won't end up back on the login page, which is also really nice for the
+                  // user experience.
+                  navigate(from, { replace: true });
+                }
               });
             } else {
-              auth.register(email, password, () => {
-                navigate(from, { replace: true });
+              auth.register(email, password, (isSuccessful) => {
+                if (!isSuccessful) {
+                  showNotification({
+                    message: `An account with that email already exists`,
+                    color: "red",
+                  });
+                } else {
+                  navigate(from, { replace: true });
+                }
               });
             }
-            
           })}
         >
           <Stack className="px-[12%]">
@@ -95,6 +109,7 @@ function LoginPage() {
               variant="default"
               className="bg-slate-600 text-blue-300 border-none w-fit px-8"
               type="submit"
+              loading={auth.isLoading}
             >
               {upperFirst(type)}
             </Button>

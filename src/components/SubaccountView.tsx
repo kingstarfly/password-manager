@@ -1,5 +1,11 @@
 import React from "react";
-import { ActionIcon, Button, PasswordInput, TextInput } from "@mantine/core";
+import {
+  ActionIcon,
+  Button,
+  Loader,
+  PasswordInput,
+  TextInput,
+} from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TbCheck, TbCopy, TbTrash } from "react-icons/tb";
@@ -96,11 +102,19 @@ const SubaccountView = ({
   }
 
   if (isInitialLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col items-center justify-start h-full p-8">
+        <Loader />
+      </div>
+    );
   }
 
   if (error instanceof Error) {
-    return <div>Error: {error.message}</div>;
+    return (
+      <div className="flex flex-col items-center justify-start h-full p-8">
+        Error: {error.message}
+      </div>
+    );
   }
 
   return (
