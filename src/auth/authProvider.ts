@@ -55,6 +55,7 @@ const authProvider = {
     });
   },
   signout(callback: VoidFunction) {
+    console.log(Cookies.get());
     fetch(BASE_URL + "/auth/logout", {
       method: "DELETE",
       credentials: "include",

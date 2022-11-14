@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import SubaccountView from "../components/SubaccountView";
 import { TbPlus } from "react-icons/tb";
 import { BASE_URL } from "../api/constants";
+import Cookies from "js-cookie";
 
 // Create 10 fake accounts with email "user@example.com"
 const fakeSubaccounts: SubaccountPreview[] = Array.from(
@@ -39,6 +40,8 @@ function HomePage() {
       .then((response) => {
         console.log(response);
         if (response.status === 200) {
+          console.log(Cookies.get());
+
           return response.json() || fakeSubaccounts;
         } else {
           return [];
