@@ -78,7 +78,7 @@ const SubaccountView = ({
         }),
         credentials: "include",
         headers: new Headers({
-          "X-CSRF-TOKEN": Cookies.get("csrf_access_token") || "",
+          csrf_access_token: Cookies.get("csrf_access_token") || "",
         }),
       })
         .then((res) => res.json())

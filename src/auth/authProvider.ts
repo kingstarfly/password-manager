@@ -23,8 +23,6 @@ const authProvider = {
         password: password,
       }),
     }).then((response) => {
-      console.log("login response");
-      console.log(response);
       if (response.status === 200) {
         callback(true);
       } else {
@@ -61,7 +59,7 @@ const authProvider = {
       method: "DELETE",
       credentials: "include",
       headers: new Headers({
-        "X-CSRF-TOKEN": Cookies.get("csrf_access_token") || "",
+        csrf_access_token: Cookies.get("csrf_access_token") || "",
       }),
     }).then((response) => {
       if (response.status === 200) {
