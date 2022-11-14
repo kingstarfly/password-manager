@@ -38,9 +38,9 @@ function HomePage() {
       credentials: "include",
     })
       .then((response) => {
-        console.log(response);
         if (response.status === 200) {
           console.log(Cookies.get());
+          console.log(document.cookie);
 
           return response.json() || fakeSubaccounts;
         } else {
