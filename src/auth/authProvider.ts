@@ -2,6 +2,7 @@
  * This represents some generic auth provider API, like Firebase.
  */
 
+import Cookies from "js-cookie";
 import { BASE_URL } from "../api/constants";
 
 const authProvider = {
@@ -59,6 +60,9 @@ const authProvider = {
     fetch(BASE_URL + "/auth/logout", {
       method: "DELETE",
       credentials: "include",
+      headers: new Headers({
+        "X-CSRF-TOKEN": Cookies.get("csrf_access_token") || "",
+      }),
     }).then((response) => {
       if (response.status === 200) {
         callback();
