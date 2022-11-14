@@ -39,9 +39,6 @@ function HomePage() {
     })
       .then((response) => {
         if (response.status === 200) {
-          console.log(Cookies.get());
-          console.log(document.cookie);
-
           return response.json() || fakeSubaccounts;
         } else {
           return [];
